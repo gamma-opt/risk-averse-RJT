@@ -105,7 +105,7 @@ for  n in N
         @constraint(model,[h in H] ,μ_h0[h] == sum(vec_μ_ht[1][h,t] for t in T))
     else
         for d in CartesianIndices((fill(D,n-1)...,))
-            @constraint(model,[h in H] ,sum(vec_μ_hdh[n-1][Tuple(d)...,hh,h] for hh in H) == sum(vec_μ_ht[n][Tuple(d)...,h,t] for t in T))
+            @constraint(model,[h in H] ,sum(vec_μ_hdh[n-1][Tuple(d)[1:(end-1)]...,hh,Tuple(d)[end],h] for hh in H) == sum(vec_μ_ht[n][Tuple(d)...,h,t] for t in T))
         end
     end
     for d in CartesianIndices((fill(D,n-1)...,))
