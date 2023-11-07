@@ -177,8 +177,12 @@ function solve_nmonitoring(N; verbose=false)
     @constraint(model, [l in L_set], μ_L[l] == p_L[l])
     @constraint(model, [l in L_set, r1 in R_set], vec_μ_R[1][l,r1] == p_L[l]*p_res[l,1,r1])
     @constraint(model, [l in L_set, k in 2:N, r in cart(fill(R,k-1)), rk in R_set], vec_μ_R[k][l,r...,rk] == vec_μ_R[k-1][l,r...]*p_res[l,k,rk])
-    @constraint(model, [l in L_set, r in cart(fill(R,N)), a1 in A_set], vec_μ_A[1][l,r...,a1] == vec_μ_R[N][l,r...]*δ[1,r[1],a1])
-    @constraint(model, [l in L_set, k in 2:N, r in cart(fill(R,N-(k-1))), a in cart(fill(A,k-1)), ak in A_set], vec_μ_A[k][l,r...,a...,ak] == vec_μ_A_br[k][l,r...,a...]*δ[k,r[1],ak])
+    # @constraint(model, [l in L_set, r in cart(fill(R,N)), a1 in A_set], vec_μ_A[1][l,r...,a1] == vec_μ_R[N][l,r...]*δ[1,r[1],a1])
+    # @constraint(model, [l in L_set, k in 2:N, r in cart(fill(R,N-(k-1))), a in cart(fill(A,k-1)), ak in A_set], vec_μ_A[k][l,r...,a...,ak] == vec_μ_A_br[k][l,r...,a...]*δ[k,r[1],ak])
+    @constraint(model, [l in L_set, r in cart(fill(R,N)), a1 in A_set], δ[1,r[1],a1] => {vec_μ_A[1][l,r...,a1] == vec_μ_R[N][l,r...]})
+    @constraint(model, [l in L_set, r in cart(fill(R,N)), a1 in A_set], !δ[1,r[1],a1] => {vec_μ_A[1][l,r...,a1] == 0})
+    @constraint(model, [l in L_set, k in 2:N, r in cart(fill(R,N-(k-1))), a in cart(fill(A,k-1)), ak in A_set], δ[k,r[1],ak] => {vec_μ_A[k][l,r...,a...,ak] == vec_μ_A_br[k][l,r...,a...]})
+    @constraint(model, [l in L_set, k in 2:N, r in cart(fill(R,N-(k-1))), a in cart(fill(A,k-1)), ak in A_set], !δ[k,r[1],ak] => {vec_μ_A[k][l,r...,a...,ak] == 0})
     @constraint(model, [l in L_set, a in cart(fill(A,N)), f in F_set], μ_F[l,a...,f] == μ_F_br[l,a...]*p_fail(b,c_k,l,a,f,p_low,p_high))
     @constraint(model, [a in cart(fill(A,N)), f in F_set, t in T_set], μ_T[a...,f,t] == μ_T_br[a...,f]*(f==t ? 1 : 0))
     
@@ -198,4 +202,4 @@ for (i, n_stages) in enumerate(N_arr)
     sol_times[2,i] = t 
 end
 
-writedlm((@__DIR__)*"/results/nmonitoring_"*string(j)*".csv", sol_times, ',')
+writedlm((@__DIR__)*"/results/nmonitoring_indicator_"*string(j)*".csv", sol_times, ',')
